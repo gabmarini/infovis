@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en" style="width: 100%; height: 100%">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="snowflakes.css" rel="stylesheet">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+</head>
+
+<body>
+    <script>
+        var w = 960,
+            h = 500
+
+        var svg = d3.select('body').append('svg:svg')
+            .attr('width', w)
+            .attr('height', h);
+
+        var borderbox = svg.append('rect').classed('border-box', true)
+            .attr({
+                width: w,
+                height: h
+            });
+
+        setInterval(function() {
+            var flakes = spawn3RandomFlakes()
+
+            var renderedFlakes = appendToCanvas(flakes)
+
+            renderedFlakes.transition()
+                .ease('linear')
+                .duration(1000)
+                .attr('cx', function(d) {
+                    return Math.random() * w
+                })
+                .attr('cy', function(d) {
+                    return Math.random() * h
+                }).each("end", moveFlakes())
+        }, 1000)
+
+
+        function moveFlakes() {
+            d3.selectAll('circle').transition()
+                .ease('linear')
+                .duration(10000)
+                .attr('cx', function(d) {
+                    return Math.random() * w
+
+                })
+                .attr('cy', function(d) {
+                    var fall = d.y + Math.random() * 300
+                    d.y = fall
+                    return fall
+                })
+        }
+
+        function appendToCanvas(flakes) {
+
+            return svg.selectAll()
+                .data(flakes)
+                .enter()
+                .append("svg:circle")
+                .attr('r', function(d) {
+                    return d.radius
+                })
+                .attr('cx', function(d) {
+                    return d.x
+                })
+                .attr('cy', function(d) {
+                    return d.y
+                })
+
+        }
+
+        function spawn3RandomFlakes() {
+            return d3.range(100).map(function() {
+                var r = Math.random() * 10
+                return {
+                    radius: r,
+                    x: Math.random() * w - r,
+                    y: -r
+                }
+            })
+        }
+
+
+        /*
+                fill = d3.scale.category20();
+
+                var nodes = d3.range(40).map(function() {
+                    return {
+                        radius: Math.random() * 12 + 4
+                    };
+                })
+
+                var force = d3.layout.force()
+                    .friction(0.1)
+                    .gravity(0.00001)
+                    .size([w, h]);
+
+                var svg = d3.select('body').append('svg:svg')
+                    .attr('width', w)
+                    .attr('height', h);
+
+                var borderbox = svg.append('rect').classed('border-box', true)
+                    .attr({
+                        width: w,
+                        height: h
+                    });
+
+                nodes.forEach(setRandomPositionAtTopOfBounds);
+                var magnetNodes = nodes.map(magnetNodeForNode);
+
+                var linkData = magnetNodes.map(function makeLink(magnetNode, i) {
+                    return {
+                        source: magnetNode,
+                        target: nodes[i],
+                        value: 1
+                    };
+                });
+
+                nodes = nodes.concat(magnetNodes);
+                nodes.forEach(function setRadius(node) {
+                    node.radius = r;
+                });
+
+                var node = svg.selectAll('circle')
+                    .data(nodes)
+                    .enter().append('svg:circle')
+                    .attr('r', r - .75)
+                    .style('fill', function(d) {
+                        return fill(d.group);
+                    })
+                    .style('stroke', function(d) {
+                        return d3.rgb(fill(d.group)).darker();
+                    })
+
+
+
+                force
+                    .nodes(nodes)
+                    .links(linkData)
+                    .on('tick', tick)
+                    .start();
+
+                function tick() {
+                    var q = d3.geom.quadtree(nodes),
+                        i = 0,
+                        n = nodes.length;
+
+                    while (++i < n) q.visit(collide(nodes[i]));
+
+                    node.attr('cx', updateCx)
+                        .attr('cy', updateCy);
+                }
+
+                function collide(node) {
+                    var r = node.radius,
+                        nx1 = node.x - r,
+                        nx2 = node.x + r,
+                        ny1 = node.y - r,
+                        ny2 = node.y + r;
+                    return function(quad, x1, y1, x2, y2) {
+                        if (quad.point && (quad.point !== node)) {
+                            var x = node.x - quad.point.x,
+                                y = node.y - quad.point.y,
+                                l = Math.sqrt(x * x + y * y),
+                                r = node.radius + quad.point.radius;
+                            if (!node.fixed && l < r) {
+                                // The node and the node described by the quad are too close.
+                                // Push them away from each other.
+                                l = (l - r) / l * 0.5;
+                                if (!isFinite(l)) {
+                                    l = 0;
+                                }
+                                x *= l;
+                                y *= l;
+                                node.x -= x;
+                                node.y -= y;
+                                quad.point.x += x;
+                                quad.point.y += y;
+                            }
+                        }
+                        return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+                    }
+                }
+
+                // The magnet nodes do not move. 
+                // It stays under the bottom of the bounding box.
+
+                function magnetNodeForNode(node) {
+                    return {
+                        name: 'magnet',
+                        group: 100,
+                        fixed: true,
+                        // isAMagnet: true,
+                        x: node.x,
+                        y: h + r + 20
+                    };
+                }
+
+                function updateCx(d) {
+                    if (!d.fixed) {
+                        d.x = Math.max(r, Math.min(w - r, d.x));
+                    }
+                    return d.x;
+                }
+
+                function updateCy(d) {
+                    if (!d.fixed) {
+                        d.y = Math.max(r, Math.min(h - r, d.y));
+                    }
+                    return d.y;
+                }
+
+                function linkNodesToMagnetNode(nodes, magnetNode) {
+                    return nodes.map(function linkToNode(node) {
+                        return {
+                            source: magnetNode,
+                            target: node,
+                            value: 1
+                        };
+                    });
+                }
+
+                function setRandomPositionAtTopOfBounds(node) {
+                    node.x = ~~(Math.random() * w);
+                    node.y = 0;
+                }
+
+
+
+
+
+
+
+
+
+
+
+                /*
+                var width = 960
+                var height = 560
+
+                var points = [
+                    [30, -200],
+                    [100, 0],
+                    [600, 150],
+                    [300, 320],
+                    [130, 480],
+                    [470, 540],
+                    [320, 650],
+                    [700, 700],
+                    [300, 800]
+                ];
+
+
+
+                var svg = d3.select("svg")
+
+                svg.selectAll(".point")
+                    .data(points)
+                    .enter().append("circle")
+                    .attr("r", 4)
+                    .attr("transform", function(d) {
+                        return "translate(" + d + ")";
+                    });
+
+                var force = d3.layout.force()
+                    .gravity(.05)
+                    .charge(-240)
+                    .linkDistance(50)
+                    .size([width, height]);
+
+
+                var path = svg.append("path")
+                    .data([points])
+                    .attr("d", d3.svg.line()
+                        .tension(0) // Catmull–Rom
+                        .interpolate("basis-open"));
+
+                var g = svg.append("g")
+
+                var img = g.append("svg:image")
+                    .attr("xlink:href", "snowflake.png")
+                    .attr("width", 40)
+                    .attr("height", 35)
+                    .attr("x", -20)
+                    .attr("y", -17.5)
+                    .attr("transform", "rotate(0)")
+                    .style("color", "blue")
+                    .attr('transform', 'translate(' + points[0] + ')')
+
+                var svgWidth = svg.style("width")
+                var svgHeight = svg.style("height")
+
+                var circle = svg.append("circle")
+                    .attr("id", "myc")
+                    .attr("cx", 0)
+                    .attr("cy", 0)
+                    .attr("r", 10)
+                    .attr("transform", "translate(" + points[0] + ")");
+
+                img.transition("ciao")
+                    .duration(10000)
+                    .ease('linear')
+                    .attrTween("transform", translateAlong(path.node()))
+
+
+                force.nodes(img)
+                    .on("tick", tick)
+                    .start();
+
+                function random_point_spawner() {
+                    img.transition().duration(700).ease('linear')
+                        .attr("x", Math.floor(Math.random() * (2 * parseInt(svgWidth) / 3 - parseInt(svgWidth) / 3)) + parseInt(svgWidth) /
+                            3)
+                        .attr("y", parseInt(img.attr("y")) + 20)
+                        .each("end", function() {
+                            random_point_spawner()
+                        })
+                }
+
+                function tick() {
+                    var imgnode = d3.select('image')
+                    img.attr("x", Math.max(20, Math.min(width - 20, imgnode.attr('x'))))
+                        .attr("y", Math.max(17.5, Math.min(height - 17.5, imgnode.attr('y'))))
+
+                    /*
+                            link.attr("x1", function(d) {
+                                    return d.source.x;
+                                })
+                                .attr("y1", function(d) {
+                                    return d.source.y;
+                                })
+                                .attr("x2", function(d) {
+                                    return d.target.x;
+                                })
+                                .attr("y2", function(d) {
+                                    return d.target.y;
+                                });
+                                
+                }
+                /*
+                    function tick() {
+                        console.log(Math.max(20, Math.min(width - 20, img.attr('x'))), Math.max(17.5, Math.min(height - 17.5, img.attr('y'))))
+                        img.attr("x", Math.max(20, Math.min(width - 20, img.attr('x'))))
+                            .attr("y", Math.max(17.5, Math.min(height - 17.5, img.attr('y'))))
+                                    link.attr("x1", function(d) {
+                                            return d.source.x;
+                                        })
+                                        .attr("y1", function(d) {
+                                            return d.source.y;
+                                        })
+                                        .attr("x2", function(d) {
+                                            return d.target.x;
+                                        })
+                                        .attr("y2", function(d) {
+                                            return d.target.y;
+                                        });
+                    }
+
+                function translateAlong(path) {
+                    var l = path.getTotalLength();
+                    return function(d, i, a) {
+                        return function(t) {
+                            var p = path.getPointAtLength(t * l);
+                            return "translate(" + p.x + "," + p.y + ")";
+                        };
+                    };
+                }*/
+    </script>
+</body>
+
+
+</html>

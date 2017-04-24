@@ -1,0 +1,12 @@
+circle {
+    stroke-width: 1.5px;
+}
+
+line {
+    stroke: #999;
+}
+
+.border-box {
+    fill: hsla(0, 100%, 100%, 1);
+    stroke: black;
+}
