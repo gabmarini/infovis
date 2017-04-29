@@ -24,13 +24,14 @@
                 height: h
             });
 
-        var circles;
-
+        var counter = 0
         setInterval(function() {
-            var flakes = spawn3RandomFlakes()
-            var renderedFlakes = appendToCanvas(flakes)
+            if (counter == 0) {
+                var flakes = spawn3RandomFlakes()
+                var renderedFlakes = appendToCanvas(flakes)
+                counter++
+            }
 
-            circles = d3.selectAll("circle")
 
             transition()
 
@@ -42,12 +43,19 @@
                 .ease('linear')
                 .duration(5000)
                 .attr('cx', function(d) {
-                    d.x = Math.random() * w
-                    return d.x
+                    if (+d3.select(this).attr('cy') != h - d.radius)
+                        return d.x = Math.random() * w
+                    else
+                        return d.x
+
                 })
                 .attr('cy', function(d) {
-                    d.y = d.y + Math.random() * 300
-                    return d.y
+                    var fall = d.y + Math.random() * 100
+                    if (fall > h) {
+                        fall = h - d.radius
+                    }
+                    d.y = fall
+                    return fall //da rivedere il moto lento alla fine
                 })
                 .tween("attr", checkCollision())
                 .each("end", transition)
@@ -86,6 +94,28 @@
                         y1 = py - pr,
                         x2 = px + pr,
                         y2 = py + pr;
+                    var x = dx - px,
+                        y = dy - py,
+                        l = Math.sqrt(x * x + y * y),
+                        rad = r + pr
+                    if (l < rad) {
+                        l = (l - rad) / l * .5
+
+                        if (!isFinite(l)) {
+                            l = 0
+                        }
+                        x *= l
+                        y *= l
+                        dx -= x
+                        dy -= y
+                        px += x
+                        py += y
+
+                        d3.select(node).attr('cx', dx)
+                        d3.select(node).attr('cy', dy)
+                        d3.select(this).attr('cx', px)
+                        d3.select(this).attr('cy', py)
+                    }
                     /*
                 if (!(nx1 > x2)) {
                     console.log("not nx1 > x2")
@@ -124,12 +154,19 @@
                 .ease('linear')
                 .duration(10000)
                 .attr('cx', function(d) {
-                    return Math.random() * w
+                    if (d.y != h)
+                        return d.x = Math.random() * w
+                    else
+                        return d.x
 
                 })
                 .attr('cy', function(d) {
                     var fall = d.y + Math.random() * 300
+                    if (d.y > h) {
+                        fall = h - d.radius
+                    }
                     d.y = fall
+
                     return fall
                 }).tween("attr", test)
         }
@@ -155,8 +192,8 @@
         }
 
         function spawn3RandomFlakes() {
-            return d3.range(3).map(function() {
-                var r = Math.random() * 30
+            return d3.range(1).map(function() {
+                var r = Math.random() * 15
                 return {
                     radius: r,
                     x: Math.random() * w - r,
