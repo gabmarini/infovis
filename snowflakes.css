@@ -2,11 +2,15 @@ circle {
     stroke-width: 1.5px;
 }
 
+.snowflake {
+    fill: white;
+}
+
 line {
     stroke: #999;
 }
 
 .border-box {
-    fill: hsla(0, 100%, 100%, 1);
     stroke: black;
+    background-image: url("background.jpg") no-repeat center center fixed;
 }
