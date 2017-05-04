@@ -11,8 +11,8 @@
 
 <body>
     <script>
-        var w = 900,
-            h = 500
+        var w = 930,
+            h = 700
 
         var svg = d3.select('body').append('svg:svg')
             .attr('width', w)
@@ -43,6 +43,11 @@
                 width: w,
                 height: h
             });
+
+        var back = svg.append('svg:image')
+        .attr("xlink:href","background.png")
+        .attr('width', w)   
+        .attr('height', h) 
 
         setInterval(function() {
             var flakes = spawn3RandomFlakes()
@@ -239,7 +244,8 @@
                 .append('g')
                 .classed('new snowflake', true)
                 .style('fill-opacity', function(d) {
-                    return Math.random()
+                    return (d.radius - 7)/(30-7)
+                    //return Math.random()
                 })
                 .attr('T', 0)
                 .attr('transform', function(d) {
