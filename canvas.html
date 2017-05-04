@@ -11,8 +11,8 @@
 
 <body>
     <script>
-        var w = 1024,
-            h = 768
+        var w = 900,
+            h = 500
 
         var svg = d3.select('body').append('svg:svg')
             .attr('width', w)
@@ -21,7 +21,7 @@
         var snowflake
 
         d3.xml("snowflake.svg",
-            function (error, documentFragment) {
+            function(error, documentFragment) {
 
                 if (error) {
                     console.log(error);
@@ -44,13 +44,9 @@
                 height: h
             });
 
-        var counter = 0
-        setInterval(function () {
-            //if(counter == 0){
+        setInterval(function() {
             var flakes = spawn3RandomFlakes()
             var renderedFlakes = appendToCanvas(flakes)
-            counter++
-            //}
 
             transition()
 
@@ -59,7 +55,7 @@
         function transition() {
 
             d3.selectAll('.moving')
-                .filter(function (d) {
+                .filter(function(d) {
                     return d3.select(this).attr('T') == 1
                 })
                 .attr('T', 0)
@@ -67,7 +63,7 @@
                 .ease('linear')
                 .duration(1000)
                 .attr('T', 1)
-                .attr('transform', function (d) {
+                .attr('transform', function(d) {
                     if (d.y != h - d.radius * 2) {
                         var mov = (Math.random() * (d.x + 100 - d.x + 100)) + (d.x - 100)
                         d.x = Math.max(0, Math.min(w - 2 * d.radius, mov))
@@ -85,91 +81,90 @@
                     return "translate(" + d.x + "," + d.y + ") " + "scale(" + (d.radius * 2 / 35) + "," + (d.radius *
                         2 / 35) + ")"
                 })
-                .attr('cx', function (d) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function (d) {
+                .attr('cy', function(d) {
                     return d.y
                 })
-                .attr('r', function (d){
+                .attr('r', function(d) {
                     return d.radius
                 })
                 .tween('attr', checkCollision())
-                .each('end', function (d) {
+                .each('end', function(d) {
                     d3.selectAll('.near-end')
-                        .filter(function (d) {
+                        .filter(function(d) {
                             return d3.select(this).attr('T') == 1
                         })
                         .classed('near-end', false)
                         .classed('ended', true)
                     transition();
                 })
-            /*
+                /*
 
-            d3.selectAll('.moving')
-                .filter(function (d) {
-                    return d3.select(this).attr('T') == 1
-                })
-                .attr('T', 0)
-                .transition()
-                .ease('linear')
-                .duration(1000)
-                .attr('T', 1)
-                .attr('cx', function (d) {
-                    if (+d3.select(this).attr('cy') != h - d.radius) {
-                        var mov = (Math.random() * (d.x + 100 - d.x + 100)) + (d.x - 100)
-                        d.x = Math.max(d.radius, Math.min(w - d.radius, mov))
-                    }
-                    return d.x
+                d3.selectAll('.moving')
+                    .filter(function (d) {
+                        return d3.select(this).attr('T') == 1
+                    })
+                    .attr('T', 0)
+                    .transition()
+                    .ease('linear')
+                    .duration(1000)
+                    .attr('T', 1)
+                    .attr('cx', function (d) {
+                        if (+d3.select(this).attr('cy') != h - d.radius) {
+                            var mov = (Math.random() * (d.x + 100 - d.x + 100)) + (d.x - 100)
+                            d.x = Math.max(d.radius, Math.min(w - d.radius, mov))
+                        }
+                        return d.x
 
-                })
-                .attr('cy', function (d) {
-                    var fall = d.y + d.fall
-                    if (fall > h) {
-                        fall = h - d.radius
-                        d3.select(this)
-                            .classed('near-end', true)
-                            .classed('moving', false)
-                    }
-                    return d.y = fall
-                    /*
-                    var fall = d.y + Math.random() * 200
-                    if (fall > h) {
-                        fall = h - d.radius
-                        d3.select(this)
-                            .classed('near-end', true)
-                            .classed('moving', false)
-                    }
-                    return d.y = fall*/
-            /*
-                            })
-                            .tween("attr", checkCollision())
-                            .each("end", function (d) {
-                                d3.selectAll('.near-end')
-                                    .filter(function (d) {
-                                        return d3.select(this).attr('T') == 1
-                                    })
-                                    .classed('near-end', false)
-                                    .classed('ended', true)
-                                transition();
-                            })
+                    })
+                    .attr('cy', function (d) {
+                        var fall = d.y + d.fall
+                        if (fall > h) {
+                            fall = h - d.radius
+                            d3.select(this)
+                                .classed('near-end', true)
+                                .classed('moving', false)
+                        }
+                        return d.y = fall
+                        /*
+                        var fall = d.y + Math.random() * 200
+                        if (fall > h) {
+                            fall = h - d.radius
+                            d3.select(this)
+                                .classed('near-end', true)
+                                .classed('moving', false)
+                        }
+                        return d.y = fall*/
+                /*
+                                })
+                                .tween("attr", checkCollision())
+                                .each("end", function (d) {
+                                    d3.selectAll('.near-end')
+                                        .filter(function (d) {
+                                            return d3.select(this).attr('T') == 1
+                                        })
+                                        .classed('near-end', false)
+                                        .classed('ended', true)
+                                    transition();
+                                })
 
-                        d3.selectAll('.ended')
-                            .filter(function (d) {
-                                return d3.select(this).attr('T') == 1
-                            })
-                            .transition()
-                            .duration(1000)
-                            .tween('attr', checkCollision())
-            */
+                            d3.selectAll('.ended')
+                                .filter(function (d) {
+                                    return d3.select(this).attr('T') == 1
+                                })
+                                .transition()
+                                .duration(1000)
+                                .tween('attr', checkCollision())
+                */
         }
 
 
         function checkCollision() {
-            return function (d, i, a) {
-                return function (t) {
-                    if (collide(this)) {
-                    } else {
+            return function(d, i, a) {
+                return function(t) {
+                    if (collide(this)) {} else {
                         //d3.select(this).style('fill', 'black')
                     }
                 }
@@ -187,7 +182,7 @@
                 ny1 = dy - r,
                 ny2 = dy + r;
             var colliding = false;
-            d3.selectAll('g').each(function (point, i) {
+            d3.selectAll('g').each(function(point, i) {
                 var pointID = +d3.select(this).attr('id')
                 var pr = +d3.select(this).attr('r')
                 var px = +d3.select(this).attr('cx')
@@ -243,22 +238,25 @@
                 .enter()
                 .append('g')
                 .classed('new snowflake', true)
+                .style('fill-opacity', function(d) {
+                    return Math.random()
+                })
                 .attr('T', 0)
-                .attr('transform', function (d) {
+                .attr('transform', function(d) {
                     var y = d.y = d.y - d.radius * 2
                     return "translate(" + d.x + "," + y + ") " + "scale(" + (d.radius * 2 / 35) + "," + (d.radius *
                         2 / 35) + ") "
                 })
-                .attr('cx', function (d) {
+                .attr('cx', function(d) {
                     return d.x
                 })
-                .attr('cy', function (d) {
+                .attr('cy', function(d) {
                     return d.y
                 })
-                .attr('r', function (d){
+                .attr('r', function(d) {
                     return d.radius
                 })
-                .attr('id', function (d) {
+                .attr('id', function(d) {
                     return d.id
                 })
 
@@ -269,7 +267,7 @@
                 .ease('linear')
                 .duration(1000)
                 .attr('T', 1)
-                .attr('transform', function (d) {
+                .attr('transform', function(d) {
                     if (d.y != h - d.radius) {
                         var mov = (Math.random() * (d.x + 50 - d.x + 50)) + (d.x - 50)
                         d.x = Math.max(2 * d.radius, Math.min(w - 2 * d.radius, mov))
@@ -278,7 +276,7 @@
                     return "translate(" + d.x + "," + d.y + ") " + "scale(" + (d.radius * 2 / 35) + "," + (d.radius *
                         2 / 35) + ") "
                 })
-                .each("end", function (d) {
+                .each("end", function(d) {
                     if (!d3.select(this).classed('near-end')) {
                         d3.select(this).classed('moving', true)
                     }
@@ -341,7 +339,7 @@
         }
 
         function spawn3RandomFlakes() {
-            return d3.range(3).map(function () {
+            return d3.range(3).map(function() {
                 var r = Math.random() * (30 - 7) + 7
                 var numfall = Math.random() * (15 - 5) + 5
                 var fallingY = h / numfall
@@ -352,7 +350,7 @@
                     y: -r,
                     id: Math.random(),
                     fall: fallingY,
-                    rot : rot
+                    rot: rot
                 }
             })
         }
