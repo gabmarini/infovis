@@ -18,6 +18,26 @@
             .attr('width', w)
             .attr('height', h);
 
+        var snowflake
+
+        d3.xml("snowflake.svg",
+            function (error, documentFragment) {
+
+                if (error) {
+                    console.log(error);
+                    return;
+                }
+                var svgNode = documentFragment
+                    .getElementsByTagName("svg")[0].getElementsByTagName('g')[0].getElementsByTagName('path')[0];
+                //use plain Javascript to extract the node
+
+                //svg.node().appendChild(svgNode);
+                //d3's selection.node() returns the DOM node, so we
+                //can use plain Javascript to append content
+
+                snowflake = d3.select(svgNode).attr('d')
+
+            });
         var borderbox = svg.append('rect').classed('border-box', true)
             .attr({
                 width: w,
@@ -25,25 +45,21 @@
             });
 
         var counter = 0
-        setInterval(function() {
-            //if (counter == 0) {
+        setInterval(function () {
+            //if(counter == 0){
             var flakes = spawn3RandomFlakes()
             var renderedFlakes = appendToCanvas(flakes)
-                //counter++
-                //}
+            counter++
+            //}
 
-            if (counter == 0) {
-                transition()
-                counter++
-            }
-
+            transition()
 
         }, 1000)
 
         function transition() {
 
             d3.selectAll('.moving')
-                .filter(function(d) {
+                .filter(function (d) {
                     return d3.select(this).attr('T') == 1
                 })
                 .attr('T', 0)
@@ -51,7 +67,55 @@
                 .ease('linear')
                 .duration(1000)
                 .attr('T', 1)
-                .attr('cx', function(d) {
+                .attr('transform', function (d) {
+                    if (d.y != h - d.radius * 2) {
+                        var mov = (Math.random() * (d.x + 100 - d.x + 100)) + (d.x - 100)
+                        d.x = Math.max(2 * d.radius, Math.min(w - 2 * d.radius, mov))
+                    }
+                    var fall = d.y + d.fall
+                    if (fall >= h - d.radius * 2) {
+                        fall = h - d.radius * 2
+                        d.y = fall
+                        d3.select(this)
+                            .classed('near-end', true)
+                            .classed('moving', false)
+                    } else {
+                        d.y = fall
+                    }
+                    return "translate(" + d.x + "," + d.y + ") " + "scale(" + (d.radius * 2 / 35) + "," + (d.radius *
+                        2 / 35) + ")"
+                })
+                .attr('cx', function (d) {
+                    return d.x
+                })
+                .attr('cy', function (d) {
+                    return d.y
+                })
+                .attr('r', function (d){
+                    return d.radius
+                })
+                .tween('attr', checkCollision())
+                .each('end', function (d) {
+                    d3.selectAll('.near-end')
+                        .filter(function (d) {
+                            return d3.select(this).attr('T') == 1
+                        })
+                        .classed('near-end', false)
+                        .classed('ended', true)
+                    transition();
+                })
+            /*
+
+            d3.selectAll('.moving')
+                .filter(function (d) {
+                    return d3.select(this).attr('T') == 1
+                })
+                .attr('T', 0)
+                .transition()
+                .ease('linear')
+                .duration(1000)
+                .attr('T', 1)
+                .attr('cx', function (d) {
                     if (+d3.select(this).attr('cy') != h - d.radius) {
                         var mov = (Math.random() * (d.x + 100 - d.x + 100)) + (d.x - 100)
                         d.x = Math.max(d.radius, Math.min(w - d.radius, mov))
@@ -59,40 +123,51 @@
                     return d.x
 
                 })
-                .attr('cy', function(d) {
-                    var fall = d.y + Math.random() * 200
+                .attr('cy', function (d) {
+                    var fall = d.y + d.fall
                     if (fall > h) {
-                        console.log(fall)
-                        debugger
                         fall = h - d.radius
                         d3.select(this)
                             .classed('near-end', true)
                             .classed('moving', false)
                     }
                     return d.y = fall
-                })
-                .tween("attr", checkCollision())
-                .each("end", function(d) {
-                    d3.selectAll('.near-end')
-                        .classed('near-end', false)
-                        .classed('ended', true)
-                    transition();
-                })
+                    /*
+                    var fall = d.y + Math.random() * 200
+                    if (fall > h) {
+                        fall = h - d.radius
+                        d3.select(this)
+                            .classed('near-end', true)
+                            .classed('moving', false)
+                    }
+                    return d.y = fall*/
+            /*
+                            })
+                            .tween("attr", checkCollision())
+                            .each("end", function (d) {
+                                d3.selectAll('.near-end')
+                                    .filter(function (d) {
+                                        return d3.select(this).attr('T') == 1
+                                    })
+                                    .classed('near-end', false)
+                                    .classed('ended', true)
+                                transition();
+                            })
 
-            d3.selectAll('.ended')
-                .filter(function(d) {
-                    return d3.select(this).attr('T') == 1
-                })
-                .transition()
-                .duration(100)
-                .tween('attr', checkCollision())
-
+                        d3.selectAll('.ended')
+                            .filter(function (d) {
+                                return d3.select(this).attr('T') == 1
+                            })
+                            .transition()
+                            .duration(1000)
+                            .tween('attr', checkCollision())
+            */
         }
 
 
         function checkCollision() {
-            return function(d, i, a) {
-                return function(t) {
+            return function (d, i, a) {
+                return function (t) {
                     if (collide(this)) {
                         d3.select(this).style('fill', 'red')
                     } else {
@@ -113,7 +188,7 @@
                 ny1 = dy - r,
                 ny2 = dy + r;
             var colliding = false;
-            d3.selectAll('circle').each(function(point, i) {
+            d3.selectAll('g').each(function (point, i) {
                 var pointID = +d3.select(this).attr('id')
                 var pr = +d3.select(this).attr('r')
                 var px = +d3.select(this).attr('cx')
@@ -164,46 +239,47 @@
 
         function appendToCanvas(flakes) {
 
-            return svg.selectAll()
+            var g = svg.selectAll()
                 .data(flakes)
                 .enter()
-                .append("svg:circle")
+                .append('g')
                 .classed('new', true)
                 .attr('T', 0)
-                .attr('r', function(d) {
+                .attr('transform', function (d) {
+                    var y = d.y = d.y - d.radius * 2
+                    return "translate(" + d.x + "," + y + ") " + "scale(" + (d.radius * 2 / 35) + "," + (d.radius *
+                        2 / 35) + ") "
+                })
+                .attr('cx', function (d) {
+                    return d.x
+                })
+                .attr('cy', function (d) {
+                    return d.y
+                })
+                .attr('r', function (d){
                     return d.radius
                 })
-                .attr('cx', function(d) {
-                    return d.x
-                })
-                .attr('cy', function(d) {
-                    return d.y
-                }).attr('id', function(d) {
+                .attr('id', function (d) {
                     return d.id
                 })
-                .transition()
-                .ease("linear")
+
+            g.append('path')
+                .attr('d', snowflake)
+
+            g.transition()
+                .ease('linear')
                 .duration(1000)
                 .attr('T', 1)
-                .attr('cx', function(d) {
-                    if (+d3.select(this).attr('cy') != h - d.radius) {
+                .attr('transform', function (d) {
+                    if (d.y != h - d.radius) {
                         var mov = (Math.random() * (d.x + 50 - d.x + 50)) + (d.x - 50)
-                        d.x = Math.max(d.radius, Math.min(w - d.radius, mov))
+                        d.x = Math.max(2 * d.radius, Math.min(w - 2 * d.radius, mov))
                     }
-                    return d.x
+                    d.y = d.y + d.fall
+                    return "translate(" + d.x + "," + d.y + ") " + "scale(" + (d.radius * 2 / 35) + "," + (d.radius *
+                        2 / 35) + ") "
                 })
-                .attr('cy', function(d) {
-                    var fall = d.y + Math.random() * 200
-                    if (fall > h) {
-                        fall = h - d.radius
-                        d3.select(this)
-                            .classed('near-end', true)
-                            .classed('moving', false)
-                    }
-                    return d.y = fall
-                })
-                .tween("attr", checkCollision())
-                .each("end", function(d) {
+                .each("end", function (d) {
                     if (!d3.select(this).classed('near-end')) {
                         d3.select(this).classed('moving', true)
                     }
@@ -211,16 +287,71 @@
                     transition()
                 })
 
+            /*
+
+            return svg.selectAll()
+                .data(flakes)
+                .enter()
+                .append("svg:circle")
+                .classed('new', true)
+                .attr('T', 0)
+                .attr('r', function (d) {
+                    return d.radius
+                })
+                .attr('cx', function (d) {
+                    return d.x
+                })
+                .attr('cy', function (d) {
+                    return d.y
+                }).attr('id', function (d) {
+                    return d.id
+                })
+                .transition()
+                .ease("linear")
+                .duration(1000)
+                .attr('T', 1)
+                .attr('cx', function (d) {
+                    if (+d3.select(this).attr('cy') != h - d.radius) {
+                        var mov = (Math.random() * (d.x + 50 - d.x + 50)) + (d.x - 50)
+                        d.x = Math.max(d.radius, Math.min(w - d.radius, mov))
+                    }
+                    return d.x
+                })
+                .attr('cy', function (d) {
+                    return d.y = d.y + d.fall
+                    /*
+                    var fall = d.y + Math.random() * 200
+                    if (fall > h) {
+                        fall = h - d.radius
+                        d3.select(this)
+                            .classed('near-end', true)
+                            .classed('moving', false)
+                    }
+                    return d.y = fall*/
+            /*
+                          })
+                          .tween("attr", checkCollision())
+                          .each("end", function (d) {
+                              if (!d3.select(this).classed('near-end')) {
+                                  d3.select(this).classed('moving', true)
+                              }
+                              d3.select(this).classed('new', false)
+                              transition()
+                          })*/
+
         }
 
         function spawn3RandomFlakes() {
-            return d3.range(1).map(function() {
-                var r = Math.random() * 15
+            return d3.range(3).map(function () {
+                var r = Math.random() * (15 - 7) + 7
+                var numfall = Math.random() * (10 - 5) + 5
+                var fallingY = h / numfall
                 return {
                     radius: r,
-                    x: Math.random() * w - r,
+                    x: Math.random() * w - r * 2,
                     y: -r,
-                    id: Math.random()
+                    id: Math.random(),
+                    fall: fallingY,
                 }
             })
         }
