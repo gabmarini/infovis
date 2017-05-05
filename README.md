@@ -1,4 +1,4 @@
-# Learn D3.js: Snowfalling
+# Learning D3.js: Snowfalling
 
 Questo progetto mira a costruire una scena rappresentante una nevicata, tre fiocchi di neve vengono creati al di sopra dell'area di disegno ogni secondo e vengono fatti scendere fino alla base, una volta arrivati alla base i fiocchi si accumulano.
 
