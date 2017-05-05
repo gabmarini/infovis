@@ -1,21 +1,8 @@
-circle {
-    stroke-width: 1.5px;
-}
-
 .snowflake {
     fill: white;
-}
-
-line {
-    stroke: #999;
 }
 
 .border-box {
     stroke: black;
     background-image: url("background.jpg") no-repeat center center fixed;
-}
-
-body {
-    width: 900px;
-    height: 500px;
 }

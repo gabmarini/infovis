@@ -45,7 +45,7 @@ var borderbox = svg.append('rect').classed('border-box', true)
 
 //appending a fancy background
 svg.append('svg:image')
-    .attr('href', 'background.png')
+    .attr('href', 'http://www.spriteland.com/sprites/downloads/dark-mountain-vector-background_PNG.png')
     .attr('preserveAspectRatio', 'none')
     .attr('width', w)
     .attr('height', h)
@@ -250,6 +250,10 @@ function appendToCanvas(flakes) {
 
 }
 
+/**
+ * Function used to create "num" json object used to render the snowflakes, this function is invoked once every second,
+ * the json objects are then passed to the render function.
+ */
 function RandomFlakes(num) {
     return d3.range(num).map(function() {
         var r = Math.random() * (maxRadius - minRadius) + minRadius
