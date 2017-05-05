@@ -19,7 +19,7 @@ var svg = d3.select('body').append('svg:svg')
 //snowflake path:d string
 var snowflake
 
-//extracting snowflake path:d
+//extracting snowflake path:d string
 d3.xml('snowflake.svg',
     function(error, documentFragment) {
 
@@ -88,12 +88,12 @@ function transition() {
                 fall = h - d.radius * 2
                 d.y = fall
                 d3.select(this)
-                    .classed('near-end', true) //mark the snowflake as near the end and no more moving
+                    .classed('near-end', true) //mark the snowflake as near the end and no more moving (at least on its last movement)
                     .classed('moving', false)
             } else {
                 d.y = fall
             }
-            return 'translate(' + d.x + ',' + d.y + ') ' + 'scale(' + (d.radius * 2 / 35) + ',' + (d.radius * 2 / 35) + ')'
+            return 'translate(' + d.x + ',' + d.y + ') ' + 'scale(' + (d.radius * 2 / snowflakeBorder) + ',' + (d.radius * 2 / snowflakeBorder) + ')'
         })
         .attr('cx', function(d) {
             return d.x
