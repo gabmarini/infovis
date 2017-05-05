@@ -1,8 +1,8 @@
 //constants start
 var w = 900, //canvas width
     h = 560, //canvas height
-    maxRadius = 20, //max snowflake radius
-    minRadius = 6, //min snowflake radius
+    maxRadius = 15, //max snowflake radius
+    minRadius = 2, //min snowflake radius
     maxFall = 5, //max direction changes (and path segments from top to bottom) possible for a snowflake (influence velocity) 
     minFall = 3, //min direction changes (and path segments from top to bottom) possible for a snowflake (influence velocity)
     snowflakeBorder = 35, //snowflake's border dimension (useful to scale snowflakes)
@@ -53,6 +53,7 @@ svg.append('svg:image')
 
 //main cicle start
 setInterval(function() {
+
     //spawn 3 random flakes above the canvas. For info about the flakes read below
     appendToCanvas(RandomFlakes(3))
 
@@ -92,8 +93,7 @@ function transition() {
             } else {
                 d.y = fall
             }
-            return 'translate(' + d.x + ',' + d.y + ') ' + 'scale(' + (d.radius * 2 / 35) + ',' + (d.radius *
-                2 / 35) + ')'
+            return 'translate(' + d.x + ',' + d.y + ') ' + 'scale(' + (d.radius * 2 / 35) + ',' + (d.radius * 2 / 35) + ')'
         })
         .attr('cx', function(d) {
             return d.x
@@ -208,8 +208,7 @@ function appendToCanvas(flakes) {
         .attr('T', 0)
         .attr('transform', function(d) {
             var y = d.y = d.y - d.radius * 2
-            return 'translate(' + d.x + ',' + y + ') ' + 'scale(' + (d.radius * 2 / snowflakeBorder) + ',' + (d.radius *
-                2 / snowflakeBorder) + ') '
+            return 'translate(' + d.x + ',' + y + ') ' + 'scale(' + (d.radius * 2 / snowflakeBorder) + ',' + (d.radius * 2 / snowflakeBorder) + ') '
         })
         .attr('cx', function(d) {
             return d.x
@@ -237,8 +236,7 @@ function appendToCanvas(flakes) {
                 d.x = Math.max(2 * d.radius, Math.min(w - 2 * d.radius, mov))
             }
             d.y = d.y + d.fall
-            return 'translate(' + d.x + ',' + d.y + ') ' + 'scale(' + (d.radius * 2 / snowflakeBorder) + ',' + (d.radius *
-                2 / snowflakeBorder) + ') '
+            return 'translate(' + d.x + ',' + d.y + ') ' + 'scale(' + (d.radius * 2 / snowflakeBorder) + ',' + (d.radius * 2 / snowflakeBorder) + ') '
         })
         .each('end', function(d) {
             if (!d3.select(this).classed('near-end')) {
@@ -256,11 +254,11 @@ function appendToCanvas(flakes) {
  */
 function RandomFlakes(num) {
     return d3.range(num).map(function() {
-        var r = Math.random() * (maxRadius - minRadius) + minRadius
-        var numfall = Math.random() * (maxFall - minFall) + minFall
+        var r = Math.random() * (maxRadius - minRadius) + minRadius,
+        numfall = Math.random() * (maxFall - minFall) + minFall,
+        rot = Math.floor(Math.random() * (snowflakeRotMax - snowflakeRotMin) + snowflakeRotMin)
         numfall = numfall / ((r - minRadius) / (maxRadius - minRadius))
         var fallingY = h / numfall
-        var rot = Math.floor(Math.random() * (snowflakeRotMax - snowflakeRotMin) + snowflakeRotMin)
         return {
             radius: r,
             x: Math.random() * w - r * 2,
